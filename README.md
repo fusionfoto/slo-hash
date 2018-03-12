@@ -2,7 +2,7 @@ OpenStack Swift middleware to get SLO md5 hash
 ===========================================
 
 Idea
-----
+==========
 ```
   Client  --> GET slo object with  -->
             `multipart-manifest=get` |
@@ -16,54 +16,11 @@ to trigger get  ...
   1. **get slo md5 sum** base on slo manifest.
   2. **add it into slo manifest** as extra metadata. e.g:`X-Object-Meta-SLOmd5:xxx`.
 
-How do I set this up?
----------------------
+How Could I test it or work on development ?
+====================
 
-The middleware can be installed in a fashion similar to all other OpenStack
-Swift middleware. Specifically, you need to install the python package on the
-proxy node and add it to the pipeline.
-
-Until a version of this middleware is published on PyPI (or elsewhere), the best
-bet is to build it from source:
-```
-<virtualenv>/bin/python setup.py sdist
-```
-
-This will create a source tarball in `dist`.
-
-Upload the tarball to the server and install with:
-```
-pip install slo_hash-0.0.1.linux-x86_64.tar.gz
-```
-
-**NOTE**: on some distributions the installed middleware may not be readable in
-the installed directory (e.g. `/usr/local/lib/python<version>/dist-packages`)
-and you'll need to make sure it is world-readable.
-
-After this, add the middleware to your Swift pipeline in the proxy file. The
-filter entry does not require any parameters. For example, the entry may look
-like this:
-
-```
-[pipeline]
-pipeline = slo_hash proxy-server
-
-[filter:slo_hash]
-use = egg:slo_hash#slo_hash
-```
-
-**PS**: `make.sh` is a example script to help you understand the deployment and tace it.
-```
-# cat ./make.sh
-#python setup.py install
-python ./setup.py sdist
-pip install ./dist/slo_hash-0.0.1.tar.gz --upgrade
-swift-init proxy-server restart
-tail -f /var/log/swift/proxy_access.log
-```
-
-How Could I test it?
-----------------
+1. Setup PACO (Swift All in One) docker container
+---------------------------
 `docker` is a easy way for you to run a quick test.
 
 You can run VM or virtualbox when you doing the test.
@@ -106,57 +63,115 @@ $ docker exec -it paco_test /usr/local/bin/start.sh ( option, if your docker con
 $ docker exec -it paco-test /bin/bash
 ```
 
-After docker PACO container up and running, try the command line on your host maine as below.
- * Add a slo manifest
+2. Setup slo_hash middleware
+---------------------
+The middleware can be installed in a fashion similar to all other OpenStack
+Swift middleware. Specifically, you need to install the python package on the
+proxy node and add it to the pipeline.
+
+Regarding above section, the way to jump into docker container is 
 ```
-$ curl -H 'X-Auth-Token: AUTH_tke383f71f6f324372bef38a6372c2d6ab' -vv -X PUT http://127.0.0.1:8080/v1/AUTH_test/slo/bbb_sunflower_1080_2min.mp4?multipart-manifest=put -d '[{"path":"test_segments/bbb_sunflower_1080_2min.mp4/1520366236.000000/27883167/1048576/00000000","etag":"d4cd1ebdd6ffd624c13442a3150ba648","size_bytes":1048576},{"path":"test_segments/bbb_sunflower_1080_2min.mp4/1520366236.000000/27883167/1048576/00000001","etag":"39a8e52484fe541173cbd9c10f174798","size_bytes":1048576},{"path":"test_segments/bbb_sunflower_1080_2min.mp4/1520366236.000000/27883167/1048576/00000002","etag":"5b9f6406ae96d5320fa156fd12f2436f","size_bytes":1048576},{"path":"test_segments/bbb_sunflower_1080_2min.mp4/1520366236.000000/27883167/1048576/00000003","etag":"9975d30d2b6bfa51b2d8370555ac5080","size_bytes":1048576},{"path":"test_segments/bbb_sunflower_1080_2min.mp4/1520366236.000000/27883167/1048576/00000004","etag":"f045ccb6f4051e421de7639bbb13e4b2","size_bytes":1048576},{"path":"test_segments/bbb_sunflower_1080_2min.mp4/1520366236.000000/27883167/1048576/00000005","etag":"43f57e2e8a5ed9089812496cad72fdb1","size_bytes":1048576},{"path":"test_segments/bbb_sunflower_1080_2min.mp4/1520366236.000000/27883167/1048576/00000006","etag":"8426f2c064c18df2c6fe37f7c3b0f047","size_bytes":1048576},{"path":"test_segments/bbb_sunflower_1080_2min.mp4/1520366236.000000/27883167/1048576/00000007","etag":"e2abcbfe74aae58d0e408beb5097ce20","size_bytes":1048576},{"path":"test_segments/bbb_sunflower_1080_2min.mp4/1520366236.000000/27883167/1048576/00000008","etag":"e3f497be28f16d8cd53698d40d438821","size_bytes":1048576},{"path":"test_segments/bbb_sunflower_1080_2min.mp4/1520366236.000000/27883167/1048576/00000009","etag":"015f42efd59b9ffdd382f3e58fc66baf","size_bytes":1048576},{"path":"test_segments/bbb_sunflower_1080_2min.mp4/1520366236.000000/27883167/1048576/00000010","etag":"b23d343e5af6b002b20892c77ba45685","size_bytes":1048576},{"path":"test_segments/bbb_sunflower_1080_2min.mp4/1520366236.000000/27883167/1048576/00000011","etag":"6627b9f714f2f24120b45324d42f7eab","size_bytes":1048576},{"path":"test_segments/bbb_sunflower_1080_2min.mp4/1520366236.000000/27883167/1048576/00000012","etag":"65df14fb47075c83ff0e51c9c95f335b","size_bytes":1048576},{"path":"test_segments/bbb_sunflower_1080_2min.mp4/1520366236.000000/27883167/1048576/00000013","etag":"aac01f3ee2c8166e069972b386ab6334","size_bytes":1048576},{"path":"test_segments/bbb_sunflower_1080_2min.mp4/1520366236.000000/27883167/1048576/00000014","etag":"482b33723dfa57235d8204ac5c5b60b2","size_bytes":1048576},{"path":"test_segments/bbb_sunflower_1080_2min.mp4/1520366236.000000/27883167/1048576/00000015","etag":"a53ab1e24eabb5c08d6b5533b04fb112","size_bytes":1048576},{"path":"test_segments/bbb_sunflower_1080_2min.mp4/1520366236.000000/27883167/1048576/00000016","etag":"6201980a66f777d041b287fe9b539d19","size_bytes":1048576},{"path":"test_segments/bbb_sunflower_1080_2min.mp4/1520366236.000000/27883167/1048576/00000017","etag":"bb43e35e29364c25965fe34be119bd07","size_bytes":1048576},{"path":"test_segments/bbb_sunflower_1080_2min.mp4/1520366236.000000/27883167/1048576/00000018","etag":"018ad2e30338737613d85c3e7c4a6130","size_bytes":1048576},{"path":"test_segments/bbb_sunflower_1080_2min.mp4/1520366236.000000/27883167/1048576/00000019","etag":"637be930fee722f2cc1be414e24b5b29","size_bytes":1048576},{"path":"test_segments/bbb_sunflower_1080_2min.mp4/1520366236.000000/27883167/1048576/00000020","etag":"176f1c056099d2c49ecea19c1e94c493","size_bytes":1048576},{"path":"test_segments/bbb_sunflower_1080_2min.mp4/1520366236.000000/27883167/1048576/00000021","etag":"9d71937d63c2922c4bbade05a7058a5d","size_bytes":1048576},{"path":"test_segments/bbb_sunflower_1080_2min.mp4/1520366236.000000/27883167/1048576/00000022","etag":"c43b28d7cb03280c49e0a6ef94c7a539","size_bytes":1048576},{"path":"test_segments/bbb_sunflower_1080_2min.mp4/1520366236.000000/27883167/1048576/00000023","etag":"fd0d7b2d1a16aaa588bf37dc2ac1033f","size_bytes":1048576},{"path":"test_segments/bbb_sunflower_1080_2min.mp4/1520366236.000000/27883167/1048576/00000024","etag":"91f8af59b779d85bfb48bf19dee8faae","size_bytes":1048576},{"path":"test_segments/bbb_sunflower_1080_2min.mp4/1520366236.000000/27883167/1048576/00000025","etag":"217af21ad4ab9836c012f7e9b5763d96","size_bytes":1048576},{"path":"test_segments/bbb_sunflower_1080_2min.mp4/1520366236.000000/27883167/1048576/00000026","etag":"85f1e02ddd35a5085cd724148b154c73","size_bytes":620191}]'
+$ docker exec -it paco-test /bin/bash
+```
+
+Until a version of this middleware is published on PyPI (or elsewhere), the best
+bet is to build it from source:
+```
+<virtualenv>/bin/python setup.py sdist
+```
+
+This will create a source tarball in `dist`.
+
+Upload the tarball to the server and install with:
+```
+pip install slo_hash-0.0.1.linux-x86_64.tar.gz
+```
+
+**NOTE**: on some distributions the installed middleware may not be readable in
+the installed directory (e.g. `/usr/local/lib/python<version>/dist-packages`)
+and you'll need to make sure it is world-readable.
+
+After this, add the middleware to your Swift pipeline in the proxy file. The
+filter entry does not require any parameters. For example, the entry may look
+like this:
+
+```
+[pipeline]
+pipeline = slo_hash proxy-server
+
+[filter:slo_hash]
+use = egg:slo_hash#slo_hash
+```
+
+**PS**: `make.sh` is a example script to help you understand the deployment and tace it.
+```
+# cat ./make.sh
+#python setup.py install
+python ./setup.py sdist
+pip install ./dist/slo_hash-0.0.1.tar.gz --upgrade
+swift-init proxy-server restart
+tail -f /var/log/swift/proxy_access.log
+```
+
+exit from docker container is just `$ exit`
+
+3. Try Integration Test 
+-----------------------
+After you update the code you can try `./test/integration_test.sh`. The result should looks as below.
+However, the `integration_test.sh` use python-swiftclient, then you might need to install it on your docker host.
+e.g
+```
+pip install python-swiftclient
+```
+**PS**: run `./test/integration_test.sh` in your docker host VM
+```
+===check md5sum for bbb_sunflower_1080_2min.mp4
+ee54e072da4a66478a187ba834a0d56a
+===preparation create slo and slo_segments containers===
+===upload test slo 3 segments object===
+bbb_sunflower_1080_2min_001.mp4
+bbb_sunflower_1080_2min_002.mp4
+bbb_sunflower_1080_2min_003.mp4
+===get token===
+AUTH_tkb372465c2d7347f7b528aa560b04b01d
+===upload test slo manifest object===
 *   Trying 127.0.0.1...
 * Connected to 127.0.0.1 (127.0.0.1) port 8080 (#0)
 > PUT /v1/AUTH_test/slo/bbb_sunflower_1080_2min.mp4?multipart-manifest=put HTTP/1.1
 > Host: 127.0.0.1:8080
 > User-Agent: curl/7.47.0
 > Accept: */*
-> X-Auth-Token: AUTH_tke383f71f6f324372bef38a6372c2d6ab
-> Content-Length: 4320
+> X-Auth-Token: AUTH_tkb372465c2d7347f7b528aa560b04b01d
+> Content-Length: 360
 > Content-Type: application/x-www-form-urlencoded
-> Expect: 100-continue
 >
-< HTTP/1.1 100 Continue
-* We are completely uploaded and fine
+* upload completely sent off: 360 out of 360 bytes
 < HTTP/1.1 201 Created
-< Last-Modified: Sat, 10 Mar 2018 02:18:32 GMT
+< Last-Modified: Mon, 12 Mar 2018 21:30:44 GMT
 < Content-Length: 0
-< Etag: "8b9a8a2c3a6573ecdfd2096303e44b42"
+< Etag: "215729ecb16ddc52e240f10d04b7751d"
 < Content-Type: text/html; charset=UTF-8
-< X-Trans-Id: tx606df49946b2451c847aa-005aa34077
-< X-Openstack-Request-Id: tx606df49946b2451c847aa-005aa34077
-< Date: Sat, 10 Mar 2018 02:18:31 GMT
+< X-Trans-Id: txc0b77dae30234fcda126e-005aa6f183
+< X-Openstack-Request-Id: txc0b77dae30234fcda126e-005aa6f183
+< Date: Mon, 12 Mar 2018 21:30:43 GMT
 <
 * Connection #0 to host 127.0.0.1 left intact
-```
-
- * check slo manifest
-```
-$ swift -A http://127.0.0.1:8080/auth/v1.0 -U test:tester -K testing stat -v slo bbb_sunflower_1080_2min.mp4
+===check metadata no X-Object-Meta-Slomd5===
                    URL: http://127.0.0.1:8080/v1/AUTH_test/slo/bbb_sunflower_1080_2min.mp4
-            Auth Token: AUTH_tke383f71f6f324372bef38a6372c2d6ab
+            Auth Token: AUTH_tkb372465c2d7347f7b528aa560b04b01d
                Account: AUTH_test
              Container: slo
                 Object: bbb_sunflower_1080_2min.mp4
           Content Type: application/x-www-form-urlencoded
         Content Length: 27883167
-         Last Modified: Sat, 10 Mar 2018 02:18:32 GMT
-                  ETag: "8b9a8a2c3a6573ecdfd2096303e44b42"
+         Last Modified: Mon, 12 Mar 2018 21:30:44 GMT
+                  ETag: "215729ecb16ddc52e240f10d04b7751d"
          Accept-Ranges: bytes
-           X-Timestamp: 1520648311.59085
-            X-Trans-Id: tx0f18689fc89843e9955fc-005aa3407c
+           X-Timestamp: 1520890243.62172
+            X-Trans-Id: tx8e29a22ad84d4212be842-005aa6f184
  X-Static-Large-Object: True
-X-Openstack-Request-Id: tx0f18689fc89843e9955fc-005aa3407c
-```
-
- * trigger `slo_hash` middleware via the same way to query slo manifest.
-```
-$ curl -H 'X-Auth-Token: AUTH_tke383f71f6f324372bef38a6372c2d6ab' -v -X GET http://127.0.0.1:8080/v1/AUTH_test/slo/bbb_sunflower_1080_2min.mp4?multipart-manifest=get
+X-Openstack-Request-Id: tx8e29a22ad84d4212be842-005aa6f184
+***===trigger slomd5 via GET and ?multipart-manifest=get===***
 Note: Unnecessary use of -X or --request, GET is already inferred.
 *   Trying 127.0.0.1...
 * Connected to 127.0.0.1 (127.0.0.1) port 8080 (#0)
@@ -164,47 +179,60 @@ Note: Unnecessary use of -X or --request, GET is already inferred.
 > Host: 127.0.0.1:8080
 > User-Agent: curl/7.47.0
 > Accept: */*
-> X-Auth-Token: AUTH_tke383f71f6f324372bef38a6372c2d6ab
+> X-Auth-Token: AUTH_tkb372465c2d7347f7b528aa560b04b01d
 >
 < HTTP/1.1 200 OK
-< Content-Length: 6830
-< Etag: 6e78a77f81de2eb88440d8a98906c93b
+< Content-Length: 593
+< Etag: 758c7941293359d8fc425e34781d7746
 < Accept-Ranges: bytes
-< Last-Modified: Sat, 10 Mar 2018 02:18:42 GMT
+< Last-Modified: Mon, 12 Mar 2018 21:30:45 GMT
 < X-Object-Meta-Slomd5: ee54e072da4a66478a187ba834a0d56a
-< X-Timestamp: 1520648321.10714
+< X-Timestamp: 1520890244.37217
 < X-Static-Large-Object: True
 < Content-Type: application/json; charset=utf-8
-< X-Trans-Id: txd2b66e1d608e44f29e8d7-005aa34080
-< X-Openstack-Request-Id: txd2b66e1d608e44f29e8d7-005aa34080
-< Date: Sat, 10 Mar 2018 02:18:41 GMT
+< X-Trans-Id: tx23e4997af0a94ba1a4797-005aa6f184
+< X-Openstack-Request-Id: tx23e4997af0a94ba1a4797-005aa6f184
+< Date: Mon, 12 Mar 2018 21:30:44 GMT
 <
-[{"hash": "d4cd1ebdd6ffd624c13442a3150ba648", "last_modified": "2018-03-06T20:12:02.000000", "bytes": 1048576, "name": "/test_segments/bbb_sunflower_1080_2min.mp4/1520366236.000000/27883167/1048576/00000000", "content_type": "application/octet-stream"}, {"hash": "39a8e52484fe541173cbd9c10f174798", "last_modified": "2018-03-06T20:12:02.000000", "bytes": 1048576, "name": "/test_segments/bbb_sunflower_1080_2min.mp4/1520366236.000000/27883167/1048576/00000001", "content_type": "application/octet-stream"}, {"hash": "5b9f6406ae96d5320fa156fd12f2436f", "last_modified": "2018-03-06T20:12:02.000000", "bytes": 1048576, "name": "/test_segments/bbb_sunflower_1080_2min.mp4/1520366236.000000/27883167/1048576/00000002", "content_type": "application/octet-stream"}, {"hash": "9975d30d2b6bfa51b2d8370555ac5080", "last_modified": "2018-03-06T20:12:02.000000", "bytes": 1048576, "name": "/test_segments/bbb_sunflower_1080_2min.mp4/1520366236.000000/27883167/1048576/00000003", "content_type": "application/octet-stream"}, {"hash": "f045ccb6f4051e421de7639bbb13e4b2", "last_modified": "2018-03-06T20:12:02.000000", "bytes": 1048576, "name": "/test_segments/bbb_sunflower_1080_2min.mp4/1520366236.000000/27883167/1048576/00000004", "content_type": "application/octet-stream"}, {"hash": "43f57e2e8a5ed9089812496cad72fdb1", "last_modified": "2018-03-06T20:12:02.000000", "bytes": 1048576, "name": "/test_segments/bbb_sunflower_1080_2min.mp4/1520366236.000000/27883167/1048576/00000005", "content_type": "application/octet-stream"}, {"hash": "8426f2c064c18df2c6fe37f7c3b0f047", "last_modified": "2018-03-06T20:12:02.000000", "bytes": 1048576, "name": "/test_segments/bbb_sunflower_1080_2min.mp4/1520366236.000000/27883167/1048576/00000006", "content_type": "application/octet-stream"}, {"hash": "e2abcbfe74aae58d0e408beb5097ce20", "last_modified": "2018-03-06T20:12:02.000000", "bytes": 1048576, "name": "/test_segments/bbb_sunflower_1080_2min.mp4/1520366236.000000/27883167/1048576/00000007", "content_type": "application/octet-stream"}, {"hash": "e3f497be28f16d8cd53698d40d438821", "last_modified": "2018-03-06T20:12:02.000000", "bytes": 1048576, "name": "/test_segments/bbb_sunflower_1080_2min.mp4/1520366236.000000/27883167/1048576/00000008", "content_type": "application/octet-stream"}, {"hash": "015f42efd59b9ffdd382f3e58fc66baf", "last_modified": "2018-03-06T20:12:02.000000", "bytes": 1048576, "name": "/test_segments/bbb_sunflower_1080_2min.mp4/1520366236.000000/27883167/1048576/00000009", "content_type": "application/octet-stream"}, {"hash": "b23d343e5af6b002b20892c77ba45685", "last_modified": "2018-03-06T20:12:03.000000", "bytes": 1048576, "name": "/test_segments/bbb_sunflower_1080_2min.mp4/1520366236.000000/27883167/1048576/00000010", "content_type": "application/octet-stream"}, {"hash": "6627b9f714f2f24120b45324d42f7eab", "last_modified": "2018-03-06T20:12:03.000000", "bytes": 1048576, "name": "/test_segments/bbb_sunflower_1080_2min.mp4/1520366236.000000/27883167/1048576/00000011", "content_type": "application/octet-stream"}, {"hash": "65df14fb47075c83ff0e51c9c95f335b", "last_modified": "2018-03-06T20:12:03.000000", "bytes": 1048576, "name": "/test_segments/bbb_sunflower_1080_2min.mp4/1520366236.000000/27883167/1048576/00000012", "content_type": "application/octet-stream"}, {"hash": "aac01f3ee2c8166e069972b386ab6334", "last_modified": "2018-03-06T20:12:03.000000", "bytes": 1048576, "name": "/test_segments/bbb_sunflower_1080_2min.mp4/1520366236.000000/27883167/1048576/00000013", "content_type": "application/octet-stream"}, {"hash": "482b33723dfa57235d8204ac5c5b60b2", "last_modified": "2018-03-06T20:12:03.000000", "bytes": 1048576, "name": "/test_segments/bbb_sunflower_1080_2min.mp4/1520366236.000000/27883167/1048576/00000014", "content_type": "application/octet-stream"}, {"hash": "a53ab1e24eabb5c08d6b5533b04fb112", "last_modified": "2018-03-06T20:12:03.000000", "bytes": 1048576, "name": "/test_segments/bbb_sunflower_1080_2min.mp4/1520366236.000000/27883167/1048576/00000015", "content_type": "application/octet-stream"}, {"hash": "6201980a66f777d041b287fe9b539d19", "last_modified": "2018-03-06T20:12:03.000000", "bytes": 1048576, "name": "/test_segments/bbb_sunflower_1080_2min.mp4/1520366236.000000/27883167/1048576/00000016", "content_type": "application/octet-stream"}, {"hash": "bb43e35e29364c25965fe34be119bd07", "last_modified": "2018-03-06T20:12:03.000000", "bytes": 1048576, "name": "/test_segments/bbb_sunflower_1080_2min.mp4/1520366236.000000/27883167/1048576/00000017", "content_type": "application/octet-stream"}, {"hash": "018ad2e30338737613d85c3e7c4a6130", "last_modified": "2018-03-06T20:12:03.000000", "bytes": 1048576, "name": "/test_segments/bbb_sunflower_1080_2min.mp4/1520366236.000000/27883167/1048576/00000018", "content_type": "application/octet-stream"}, {"hash": "637be930fee722f2cc1be414e24b5b29", "last_modified": "2018-03-06T20:12:03.000000", "bytes": 1048576, "name": "/test_segments/bbb_sunflower_1080_2min.mp4/1520366236.000000/27883167/1048576/00000019", "content_type": "application/octet-stream"}, {"hash": "176f1c056099d2c49ecea19c1e94c493", "last_modified": "2018-03-06T20:12:03.000000", "bytes": 1048576, "name": "/test_segments/bbb_sunflower_1080_2min.mp4/1520366236.000000/27883167/1048576/00000020", "content_type": "application/octet-stream"}, {"hash": "9d71937d63c2922c4bbade05a7058a5d", "last_modified": "2018-03-06T20:12:03.000000", "bytes": 1048576, "name": "/test_segments/bbb_sunflower_1080_2min.mp4/1520366236.000000/27883167/1048576/00000021", "content_type": "application/octet-stream"}, {"hash": "c43b28d7cb03280c49e0a6ef94c7a539", "last_modified": "2018-03-06T20:12:03.000000", "bytes": 1048576, "name": "/test_segments/bbb_sunflower_1080_2min.mp4/1520366236.000000/27883167/1048576/00000022", "content_type": "application/octet-stream"}, {"hash": "fd0d7b2d1a16aaa588bf37dc2ac1033f", "last_modified": "2018-03-06T20:12:03.000000", "bytes": 1048576, "name": "/test_segments/bbb_sunflower_1080_2min.mp4/1520366236.000000/27883167/1048576/00000023", "content_type": "application/octet-stream"}, {"hash": "91f8af59b779d85bfb48bf19dee8faae", "last_modified": "2018-03-* Connection #0 to host 127.0.0.1 left intact
-06T20:12:03.000000", "bytes": 1048576, "name": "/test_segments/bbb_sunflower_1080_2min.mp4/1520366236.000000/27883167/1048576/00000024", "content_type": "application/octet-stream"}, {"hash": "217af21ad4ab9836c012f7e9b5763d96", "last_modified": "2018-03-06T20:12:03.000000", "bytes": 1048576, "name": "/test_segments/bbb_sunflower_1080_2min.mp4/1520366236.000000/27883167/1048576/00000025", "content_type": "application/octet-stream"}, {"hash": "85f1e02ddd35a5085cd724148b154c73", "last_modified": "2018-03-06T20:12:03.000000", "bytes": 620191, "name": "/test_segments/bbb_sunflower_1080_2min.mp4/1520366236.000000/27883167/1048576/00000026", "content_type": "application/octet-stream"}]ubuntu@docker:~/git$
-```
-
- * double check slo manifest again 
-```
-$ swift -A http://127.0.0.1:8080/auth/v1.0 -U test:tester -K testing stat -v slo bbb_sunflower_1080_2min.mp4
+* Connection #0 to host 127.0.0.1 left intact
+[{"hash": "07b81cd438af5097d584321ab99cdc06", "last_modified": "2018-03-12T21:30:41.000000", "bytes": 10485760, "name": "/slo_segments/bbb_sunflower_1080_2min_001.mp4", "content_type": "video/mp4"}, {"hash": "ff53521cfdfe801ab1e52d0e7fda4969", "last_modified": "2018-03-12T21:30:42.000000", "bytes": 10485760, "name": "/slo_segments/bbb_sunflower_1080_2min_002.mp4", "content_type": "video/mp4"}, {"hash": "e924eaf1e2171ff355c588fa84da5778", "last_modified": "2018-03-12T21:30:43.000000", "bytes": 6911647, "name": "/slo_segments/bbb_sunflower_1080_2min_003.mp4", "content_type": "video/mp4"}]\n
+===check metadata again , has X-Object-Meta-Slomd5===
                    URL: http://127.0.0.1:8080/v1/AUTH_test/slo/bbb_sunflower_1080_2min.mp4
-            Auth Token: AUTH_tke383f71f6f324372bef38a6372c2d6ab
+            Auth Token: AUTH_tkb372465c2d7347f7b528aa560b04b01d
                Account: AUTH_test
              Container: slo
                 Object: bbb_sunflower_1080_2min.mp4
           Content Type: application/x-www-form-urlencoded
         Content Length: 27883167
-         Last Modified: Sat, 10 Mar 2018 02:18:42 GMT
-                  ETag: "8b9a8a2c3a6573ecdfd2096303e44b42"
+         Last Modified: Mon, 12 Mar 2018 21:30:45 GMT
+                  ETag: "215729ecb16ddc52e240f10d04b7751d"
            Meta Slomd5: ee54e072da4a66478a187ba834a0d56a
          Accept-Ranges: bytes
-           X-Timestamp: 1520648321.10714
-            X-Trans-Id: tx701c78b4748e4952bf7ad-005aa34091
+           X-Timestamp: 1520890244.37217
+            X-Trans-Id: tx10d1de24178146a9b2937-005aa6f184
  X-Static-Large-Object: True
-X-Openstack-Request-Id: tx701c78b4748e4952bf7ad-005aa34091
+X-Openstack-Request-Id: tx10d1de24178146a9b2937-005aa6f184
+===get Slomd5===
+ee54e072da4a66478a187ba834a0d56a
+===regression test for list the object by account===
+dlo
+slo
+slo_segments
+test
+test_segments
+===regression test for list the objects in slo container===
+bbb_sunflower_1080_2min.mp4
+===regression test for download the object to name bbb_sunflower_1080_2min.mp4.download===
+bbb_sunflower_1080_2min.mp4 [auth 0.014s, headers 0.107s, total 0.703s, 40.453 MB/s]
+===check md5sum for bbb_sunflower_1080_2min.mp4.download===
+ee54e072da4a66478a187ba834a0d56a
+===delete the object - wipeout manifest and segments objects===
+bbb_sunflower_1080_2min.mp4
+===delete download object===
+===                                         sum of result                                             ===
+===         before md5           vs            meta md5              vs          after md5            ===
+---------------------------------------------------------------------------------------------------------
+ee54e072da4a66478a187ba834a0d56a vs ee54e072da4a66478a187ba834a0d56a vs ee54e072da4a66478a187ba834a0d56a
 ```
 
 **PS**: please check closely `Meta Slomd5: ee54e072da4a66478a187ba834a0d56a` for python swiftclient or `X-Object-Meta-Slomd5: ee54e072da4a66478a187ba834a0d56a` for curl command in above example. It's md5sum of testing mp4 file
-```
-$ md5sum bbb_sunflower_1080_2min.mp4
-ee54e072da4a66478a187ba834a0d56a  bbb_sunflower_1080_2min.mp4
-```
